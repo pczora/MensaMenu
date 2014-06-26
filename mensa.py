@@ -3,7 +3,8 @@ import argparse
 import requests
 from lxml import html 
 from lxml.cssselect import CSSSelector
-from lxml import etree
+import datetime
+import calendar
 day_mappings = {"mon":"mo", "tue":"di", "wed":"mi", "thu":"do", "fri":"fr", "sat":"sa"}
 arg_parser = argparse.ArgumentParser(description="Display the menu of the Mensa 1 in Braunschweig")
 arg_parser.add_argument('day', nargs='?', default='today', help='The day of the week for which the menu should be displayed. Format: Mon, Tue, Wed, Thu, Fri, Sat, Sun')
@@ -12,8 +13,11 @@ args = arg_parser.parse_args()
 req = requests.get("http://www.stw-on.de/braunschweig/essen/menus/mensa-1")
 content = req.text
 mensaHtml = html.fromstring(content)
-
 sel = CSSSelector("table.swbs_speiseplan") 
+
+if args.day == 'today':
+	args.day = calendar.day_abbr[datetime.datetime.today().weekday()].lower()
+
 abendmensa = 0 #There are two tables for each day; the first one for the Mittagsmensa, and the second one for the Abendmensa. Thus we need to count.
 for e in sel(mensaHtml):
 	if (e.get('id') == 'swbs_speiseplan_' + day_mappings[args.day]): 
